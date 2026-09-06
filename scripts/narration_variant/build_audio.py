@@ -3,7 +3,7 @@ import subprocess
 TTS_DIR = "tts"
 DRUM = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\3D\assets\두둥_북소리.mp3"
 PAD = 0.15
-N = 12
+N = 11
 
 subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
                  "-t", str(PAD), "silence.mp3"],

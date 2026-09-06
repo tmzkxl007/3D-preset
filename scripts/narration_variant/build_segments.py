@@ -2,20 +2,19 @@ import subprocess, os
 
 os.makedirs("final_segs", exist_ok=True)
 
-# (clean_file, speed, out_name)
+# (raw_file, speed, out_name) -- speed chosen from raw_dur / target_caption_dur, slower for emotional beats
 segments = [
-    ("s01_clean.mp4", 1.26, "f01.mp4"),
-    ("s02_clean.mp4", 1.19, "f02.mp4"),
-    ("s03_clean.mp4", 1.30, "f03.mp4"),
-    ("s04_clean.mp4", 0.89, "f04.mp4"),
-    ("s05_clean.mp4", 1.23, "f05.mp4"),
-    ("s06_clean.mp4", 0.91, "f06.mp4"),
-    ("s07_clean.mp4", 0.79, "f07.mp4"),
-    ("s08_clean.mp4", 0.74, "f08.mp4"),
-    ("s09_clean.mp4", 0.75, "f09.mp4"),
-    ("s10_clean.mp4", 0.91, "f10.mp4"),
-    ("s11_clean.mp4", 1.30, "f11.mp4"),
-    ("s12_clean.mp4", 1.47, "f12.mp4"),
+    ("s01_raw.mp4", 1.36, "f01.mp4"),
+    ("s02_raw.mp4", 1.26, "f02.mp4"),
+    ("s03_raw.mp4", 0.93, "f03.mp4"),
+    ("s04_raw.mp4", 1.44, "f04.mp4"),
+    ("s06_raw.mp4", 3.03, "f05.mp4"),
+    ("s07_raw.mp4", 0.57, "f06.mp4"),
+    ("s08_raw.mp4", 0.74, "f07.mp4"),
+    ("s09_raw.mp4", 1.11, "f08.mp4"),
+    ("s10_raw.mp4", 1.71, "f09.mp4"),
+    ("s11_raw.mp4", 1.28, "f10.mp4"),
+    ("s12_raw.mp4", 2.04, "f11.mp4"),
 ]
 
 for src, speed, out in segments:

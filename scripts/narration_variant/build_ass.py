@@ -61,6 +61,11 @@ base_size = min(fit_title_size(TITLE_LINES[0]), fit_title_size(TITLE_LINES[1]))
 title_size1 = int(base_size / 1.13)
 title_size2 = base_size
 
+TITLE_MIN_ACCEPTABLE = 75  # if the auto-fit shrinks below this, the title text is too long -- shorten it, don't ship it
+if base_size < TITLE_MIN_ACCEPTABLE:
+    print(f"!! WARNING: title font size {base_size}px is below the {TITLE_MIN_ACCEPTABLE}px minimum -- "
+          f"TITLE_LINES is too long, shorten it and rerun before rendering.")
+
 CAP_CENTER_Y = 1065
 
 def fragment_times(sent_idx, frags, sent_start, sent_dur):

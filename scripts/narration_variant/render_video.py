@@ -10,7 +10,7 @@ out_video = "video_only.mp4"
 ass_escaped = os.path.abspath(ass_path).replace("\\", "/").replace(":", "\\:")
 
 WIN_Y, WIN_H = 488, 1010
-CROP_Y = 300  # upper-biased crop (not centered) so bottom-of-frame leftover captions fall outside the window and get discarded, no Vmake needed
+CROP_Y = 300  # upper-biased crop (not centered) so bottom-of-frame leftover captions fall outside the window
 
 filter_complex = (
     f"[0:v]crop=1080:{WIN_H}:0:{CROP_Y},"
@@ -26,7 +26,7 @@ cmd = [
     "-loop", "1", "-i", LOGO,
     "-filter_complex", filter_complex,
     "-map", "[outv]",
-    "-t", "44.847256",
+    "-t", "43.586553",
     "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
     out_video,
 ]

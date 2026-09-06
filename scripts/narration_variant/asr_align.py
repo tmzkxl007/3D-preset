@@ -4,7 +4,7 @@ import os, sys, time, json, urllib.request, urllib.error
 key = open(os.path.expanduser("~/.volcano/keys/speechmatics"), encoding="utf-8").read().strip()
 base = "https://asr.api.speechmatics.com/v2"
 TTS_DIR = "tts"
-N = 12
+N = 11
 
 def build_multipart(config, audio_path, boundary):
     parts = []
