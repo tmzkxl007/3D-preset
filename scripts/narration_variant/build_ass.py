@@ -6,18 +6,18 @@ FONT_PATH = r"C:\Users\Administrator\AppData\Local\Microsoft\Windows\Fonts\Nanum
 TITLE_FONT_PATH = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\fonts_3d\Recipekorea 레코체 FONT.ttf"
 
 FRAGMENTS = [
-    ["한 여자가 놀이터에서", "아이를 지켜보다", "낯선 남자를 발견했습니다"],
-    ["그 남자는 아이들 곁을", "계속 서성이고 있었죠"],
-    ["옆에 있던 다른 엄마는", "그가 매일 그렇게", "아이들을 지켜본다고 귀띔했어요"],
-    ["여자는 점점 더", "불안해졌습니다"],
-    ["결국 신고할 준비까지", "마쳤죠"],
-    ["그 순간 한 남자아이가", "놀이기구에서 미끄러졌습니다"],
-    ["낯선 남자는 재빨리", "달려가 아이를 받아냈죠"],
-    ["아이 아버지가 다가오자", "그는 조용히", "사정을 털어놨습니다"],
-    ["삼 년 전 이 놀이기구에서", "아들을 잃었다고 했어요"],
-    ["그날 이후 매일", "이곳에 나와", "아이들을 지켜봐 왔던 겁니다"],
-    ["그 사실을 알게 된", "여자는 눈물을", "참지 못했습니다"],
-    ["겉모습만으로 사람을", "판단해선 안 된다는 걸", "보여준 순간이었죠"],
+    ["한 남자가 혼자", "앉아 있는 여자에게", "다가가 합석을 부탁했습니다"],
+    ["여자는 다짜고짜 큰 소리로", "그가 함께 밤을 보내자고", "했다며 몰아붙였어요"],
+    ["식당 안 사람들은", "그를 손가락질하며", "수군거렸습니다"],
+    ["남자는 아무 말 없이", "조용히 다른", "자리로 걸어갔죠"],
+    ["잠시 후 여자가", "웃으며 다가와", "그에게 말을 걸었어요"],
+    ["사실 자신은", "심리학 전공생이라고", "밝혔습니다"],
+    ["사람들이 망신당할 때", "어떻게 반응하는지", "실험한 거라고 했죠"],
+    ["그 순간 남자가", "갑자기 큰 소리로", "되받아쳤습니다"],
+    ["하룻밤에 이십 달러는", "너무 비싸다며", "여자를 몰아붙였어요"],
+    ["식당은 순식간에", "웃음바다가 됐습니다"],
+    ["여자는 얼굴이 굳은 채", "아무 말도", "하지 못했죠"],
+    ["남자는 자신이 법학도라며", "조용히 되갚아", "준 것이었습니다"],
 ]
 
 with open("tts_durations.json", encoding="utf-8") as f:
@@ -29,7 +29,7 @@ PAD = 0.15
 sentence_durations = [d + PAD for d in raw_durations]
 assert len(sentence_durations) == len(FRAGMENTS) == 12
 
-TITLE_LINES = ["놀이터에 매일 나타난 남자", "그 이유가 밝혀졌다"]
+TITLE_LINES = ["큰소리로 망신 준 여자가", "5분 뒤 당한 굴욕"]
 
 TARGET_WIDTH = 1000
 MAX_SIZE = 84
@@ -49,8 +49,8 @@ def ts(t):
     s = t % 60
     return f"{h:d}:{m:02d}:{s:05.2f}"
 
-TITLE_TARGET_WIDTH = 1040
-TITLE_MAX = 110
+TITLE_TARGET_WIDTH = 1060
+TITLE_MAX = 130
 TITLE_MIN = 50
 
 def fit_title_size(text):
@@ -61,8 +61,7 @@ base_size = min(fit_title_size(TITLE_LINES[0]), fit_title_size(TITLE_LINES[1]))
 title_size1 = int(base_size / 1.13)
 title_size2 = base_size
 
-# caption vertical center = where the source's own leftover caption used to sit
-CAP_CENTER_Y = 985
+CAP_CENTER_Y = 1065
 
 def fragment_times(sent_idx, frags, sent_start, sent_dur):
     align = word_align.get(str(sent_idx + 1), [])
@@ -84,7 +83,6 @@ def fragment_times(sent_idx, frags, sent_start, sent_dur):
             dur = sent_dur * cc / total_chars
             times.append([t, t + dur])
             t += dur
-    # extend last fragment to cover the trailing pad/silence, no gap before next sentence
     times[-1][1] = sent_start + sent_dur
     return times
 

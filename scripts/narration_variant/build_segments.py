@@ -2,14 +2,20 @@ import subprocess, os
 
 os.makedirs("final_segs", exist_ok=True)
 
-# (input_file, speed, out_name)
+# (clean_file, speed, out_name)
 segments = [
-    ("seg1_clean.mp4", 1.32, "f1.mp4"),
-    ("seg2_clean.mp4", 1.53, "f2.mp4"),
-    ("seg3_clean.mp4", 0.70, "f3.mp4"),
-    ("seg4_clean.mp4", 0.73, "f4.mp4"),
-    ("seg5_clean.mp4", 0.70, "f5.mp4"),
-    ("seg4_clean.mp4", 0.83, "f6.mp4"),
+    ("s01_clean.mp4", 1.26, "f01.mp4"),
+    ("s02_clean.mp4", 1.19, "f02.mp4"),
+    ("s03_clean.mp4", 1.30, "f03.mp4"),
+    ("s04_clean.mp4", 0.89, "f04.mp4"),
+    ("s05_clean.mp4", 1.23, "f05.mp4"),
+    ("s06_clean.mp4", 0.91, "f06.mp4"),
+    ("s07_clean.mp4", 0.79, "f07.mp4"),
+    ("s08_clean.mp4", 0.74, "f08.mp4"),
+    ("s09_clean.mp4", 0.75, "f09.mp4"),
+    ("s10_clean.mp4", 0.91, "f10.mp4"),
+    ("s11_clean.mp4", 1.30, "f11.mp4"),
+    ("s12_clean.mp4", 1.47, "f12.mp4"),
 ]
 
 for src, speed, out in segments:

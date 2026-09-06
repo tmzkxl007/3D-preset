@@ -22,10 +22,7 @@ def build_multipart(config, audio_path, boundary):
     return b"".join(parts)
 
 def submit(audio_path, lang="ko", operating_point="enhanced"):
-    config = {
-        "type": "transcription",
-        "transcription_config": {"language": lang, "operating_point": operating_point},
-    }
+    config = {"type": "transcription", "transcription_config": {"language": lang, "operating_point": operating_point}}
     boundary = "----volcanoBoundary987654"
     body = build_multipart(config, audio_path, boundary)
     req = urllib.request.Request(base + "/jobs", data=body, method="POST")
@@ -59,11 +56,7 @@ def fetch_words(job_id):
     for item in data.get("results", []):
         if item.get("type") == "word":
             alt = item["alternatives"][0]
-            words.append({
-                "word": alt["content"],
-                "start": item["start_time"],
-                "end": item["end_time"],
-            })
+            words.append({"word": alt["content"], "start": item["start_time"], "end": item["end_time"]})
     return words
 
 results = {}

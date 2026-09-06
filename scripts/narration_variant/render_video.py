@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, os
 
 LOGO = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\3D\assets\두둥픽_로고_템플릿.png"
 FONTS_DIR = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\fonts_3d".replace("\\", "/").replace(":", "\\:")
@@ -7,13 +7,13 @@ concat_in = "final_segs/concat.mp4"
 ass_path = "captions.ass"
 out_video = "video_only.mp4"
 
-import os
 ass_escaped = os.path.abspath(ass_path).replace("\\", "/").replace(":", "\\:")
 
 WIN_Y, WIN_H = 488, 1010
+CROP_Y = 300  # upper-biased crop (not centered) so bottom-of-frame leftover captions fall outside the window and get discarded, no Vmake needed
 
 filter_complex = (
-    f"[0:v]crop=1080:{WIN_H}:0:{(1920-WIN_H)//2},"
+    f"[0:v]crop=1080:{WIN_H}:0:{CROP_Y},"
     f"eq=gamma_r=1.05:gamma_b=0.95:saturation=1.08:contrast=1.03,"
     f"pad=1080:1920:0:{WIN_Y}:color=black[padded];"
     f"[padded][1:v]overlay=0:0:format=auto,"
@@ -26,7 +26,7 @@ cmd = [
     "-loop", "1", "-i", LOGO,
     "-filter_complex", filter_complex,
     "-map", "[outv]",
-    "-t", "43.849819",
+    "-t", "44.847256",
     "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
     out_video,
 ]
