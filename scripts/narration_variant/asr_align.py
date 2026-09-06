@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 import os, sys, time, json, urllib.request, urllib.error
 
-key = open(os.path.expanduser("~/.volcano/keys/speechmatics"), encoding="utf-8").read().strip()
+def get_key(env_name, filename):
+    v = os.environ.get(env_name)
+    if v:
+        return v.strip()
+    path = os.path.expanduser(f"~/.volcano/keys/{filename}")
+    if os.path.exists(path):
+        return open(path, encoding="utf-8").read().strip()
+    raise RuntimeError(f"Missing API key: set ${env_name} or create {path}")
+
+key = get_key("SPEECHMATICS_API_KEY", "speechmatics")
 base = "https://asr.api.speechmatics.com/v2"
 TTS_DIR = "tts"
 N = 11

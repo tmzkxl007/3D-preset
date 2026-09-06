@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
+from pathlib import Path
 from PIL import ImageFont
 
-FONT_PATH = r"C:\Users\Administrator\AppData\Local\Microsoft\Windows\Fonts\NanumSquareRoundB.ttf"
-TITLE_FONT_PATH = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\fonts_3d\Recipekorea 레코체 FONT.ttf"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FONTS_DIR = REPO_ROOT / "assets" / "fonts"
+FONT_PATH = str(FONTS_DIR / "NanumSquareRoundB.ttf")
+TITLE_FONT_PATH = str(FONTS_DIR / "Recipekorea 레코체 FONT.ttf")
 
 FRAGMENTS = [
     ["한 남자가 혼자", "앉아 있는 여자에게", "다가가 합석을 부탁했습니다"],

@@ -1,7 +1,9 @@
 import subprocess
+from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 TTS_DIR = "tts"
-DRUM = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\3D\assets\두둥_북소리.mp3"
+DRUM = str(REPO_ROOT / "assets" / "두둥_북소리.mp3")
 PAD = 0.15
 N = 11
 

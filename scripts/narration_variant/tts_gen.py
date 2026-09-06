@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 import os, json, urllib.request, subprocess
 
-KEY = open(os.path.expanduser("~/.volcano/keys/typecast"), encoding="utf-8").read().strip()
+def get_key(env_name, filename):
+    v = os.environ.get(env_name)
+    if v:
+        return v.strip()
+    path = os.path.expanduser(f"~/.volcano/keys/{filename}")
+    if os.path.exists(path):
+        return open(path, encoding="utf-8").read().strip()
+    raise RuntimeError(f"Missing API key: set ${env_name} or create {path}")
+
+KEY = get_key("TYPECAST_API_KEY", "typecast")
 VOICE_ID = "tc_68257f68bc6e3c161ab5078d"  # Piljae
 TTS_DIR = "tts"
 os.makedirs(TTS_DIR, exist_ok=True)

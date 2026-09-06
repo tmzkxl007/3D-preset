@@ -1,7 +1,10 @@
 import subprocess, os
+from pathlib import Path
 
-LOGO = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\3D\assets\두둥픽_로고_템플릿.png"
-FONTS_DIR = r"C:\Users\Administrator\OneDrive\바탕 화면\volcano-work\fonts_3d".replace("\\", "/").replace(":", "\\:")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ASSETS = REPO_ROOT / "assets"
+LOGO = str(ASSETS / "두둥픽_로고_템플릿.png")
+FONTS_DIR = str(ASSETS / "fonts").replace("\\", "/").replace(":", "\\:")
 
 concat_in = "final_segs/concat.mp4"
 ass_path = "captions.ass"
