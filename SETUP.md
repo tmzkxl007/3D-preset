@@ -16,6 +16,7 @@ cd 3D-preset
 - **ffmpeg** — 설치 후 PATH에 등록되어 있어야 함 (`ffmpeg -version`으로 확인)
 - **Python 3.10+**
 - **Pillow**: `pip install Pillow` (스크립트가 쓰는 외부 패키지는 이것 하나뿐 — 나머지는 표준 라이브러리)
+- **yt-dlp** — 유튜브 등에서 소스 영상을 받을 때 사용 (`yt-dlp -f "bv*+ba/b" --merge-output-format mp4 -o "source.%(ext)s" <URL>`). winget/pip 등으로 설치, PATH 등록 확인 (`yt-dlp --version`).
 
 ## 3. API 키 설정
 
