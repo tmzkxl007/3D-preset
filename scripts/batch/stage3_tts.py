@@ -13,7 +13,8 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-ROOT = Path(r"C:\Users\최진영\3d_works")
+ROOT = Path(os.environ.get("VOLCANO_WORKDIR") or (Path.home() / "3d_works"))
+# 작업 폴더는 저장소 밖에 둔다. VOLCANO_WORKDIR 로 바꿀 수 있다.
 CFG = json.loads((ROOT / "scripts_batch.json").read_text(encoding="utf-8"))
 import sys
 if len(sys.argv) > 1:

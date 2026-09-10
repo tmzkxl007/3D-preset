@@ -17,7 +17,8 @@ from pathlib import Path
 import numpy as np
 from PIL import ImageFont
 
-ROOT = Path(r"C:\Users\최진영\3d_works")
+ROOT = Path(os.environ.get("VOLCANO_WORKDIR") or (Path.home() / "3d_works"))
+# 작업 폴더는 저장소 밖에 둔다. VOLCANO_WORKDIR 로 바꿀 수 있다.
 REPO = Path(__file__).resolve().parents[2]
 ASSETS = REPO / "assets"
 FONTS = ASSETS / "fonts"
