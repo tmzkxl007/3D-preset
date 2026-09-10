@@ -100,12 +100,15 @@ def main():
     else:
         print(f"  OK  라우드니스 {lufs:.1f} LUFS")
 
+    # 파일명이 아니라 상위 폴더로 판정한다 — 파일명에 폴더명이 들어가도 통과하면 안 된다
     root = spec.get("delivery", {}).get("root", "")
     leaf = root.replace("\\", "/").rstrip("/").split("/")[-1] if root else ""
-    if leaf and leaf not in str(video).replace("\\", "/"):
-        warns.append(f"납품 폴더 밖입니다 — 완성본은 '{root}' 아래로 보냅니다 (지금: {video.parent})")
-    elif leaf:
-        print(f"  OK  납품 경로 ({leaf})")
+    if leaf:
+        parents = [p.name for p in video.resolve().parents]
+        if leaf in parents:
+            print(f"  OK  납품 경로 ({leaf})")
+        else:
+            warns.append(f"납품 폴더 밖입니다 — 완성본은 '{root}' 아래로 보냅니다 (지금: {video.parent})")
 
     print()
     for w in warns:
