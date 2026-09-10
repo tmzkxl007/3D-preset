@@ -25,6 +25,11 @@ def load_spec():
 
 
 def probe(path):
+    a = subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "a:0",
+         "-show_entries", "stream=sample_rate,channels", "-of", "json", str(path)],
+        capture_output=True, text=True)
+    ast = (json.loads(a.stdout or "{}").get("streams") or [{}])[0]
     r = subprocess.run(
         ["ffprobe", "-v", "error", "-select_streams", "v:0",
          "-show_entries", "stream=width,height,avg_frame_rate,codec_name",
@@ -38,6 +43,7 @@ def probe(path):
     fps = float(num) / float(den) if float(den or 0) else 0.0
     return dict(width=st.get("width"), height=st.get("height"), fps=fps,
                 vcodec=st.get("codec_name"),
+                asr=int(ast.get("sample_rate") or 0), ach=ast.get("channels"),
                 duration=float(d.get("format", {}).get("duration", 0)))
 
 
@@ -101,6 +107,14 @@ def main():
         print(f"  OK  라우드니스 {lufs:.1f} LUFS")
 
     # 파일명이 아니라 상위 폴더로 판정한다 — 파일명에 폴더명이 들어가도 통과하면 안 된다
+    want_sr = out.get("audio_sample_rate")
+    if want_sr:
+        if p["asr"] != want_sr:
+            fails.append(f"오디오 샘플레이트 {p['asr']}Hz — 규격은 {want_sr}Hz "
+                         f"(loudnorm 이 업샘플링한 값이 그대로 나간 경우가 많다)")
+        else:
+            print(f"  OK  오디오 {p['asr']}Hz / {p['ach']}ch")
+
     root = spec.get("delivery", {}).get("root", "")
     leaf = root.replace("\\", "/").rstrip("/").split("/")[-1] if root else ""
     if leaf:
