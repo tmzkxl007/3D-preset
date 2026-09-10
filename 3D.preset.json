@@ -77,6 +77,10 @@
     "library": "assets/sfx",
     "synthesized_by": "assets/sfx/synth_sfx.py",
     "transition_sfx_default": false,
+    "opening_drum_only": true,
+    "open_lead_sec": 0.55,
+    "sentence_gap_sec": 0.0,
+    "trim_tts_silence": true,
     "gains": { "riser": 0.45, "impact": 0.6, "hit": 0.38, "rumble": 0.34 }
   },
 

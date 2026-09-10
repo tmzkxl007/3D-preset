@@ -6,7 +6,6 @@
 자막 조각은 ASR 단어 타임스탬프에서 간격이 가장 크게 벌어지는 지점으로 자른다 —
 어절 수로 기계적으로 나누는 것보다 3D.md 5번의 "숨 쉬는 지점"에 가깝다.
 """
-import glob
 import json
 import os
 import subprocess
@@ -14,11 +13,9 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import numpy as np
 from PIL import ImageFont
 
 ROOT = Path(os.environ.get("VOLCANO_WORKDIR") or (Path.home() / "3d_works"))
-# 작업 폴더는 저장소 밖에 둔다. VOLCANO_WORKDIR 로 바꿀 수 있다.
 REPO = Path(__file__).resolve().parents[2]
 ASSETS = REPO / "assets"
 FONTS = ASSETS / "fonts"
@@ -26,9 +23,9 @@ FONT = str(FONTS / "NanumSquareRoundB.ttf")
 TITLE_FONT = str(FONTS / "Recipekorea 레코체 FONT.ttf")
 LOGO = str(ASSETS / "두둥픽_로고_템플릿.png")
 DRUM = str(ASSETS / "두둥_북소리.mp3")
-SFX = ASSETS / "sfx"
 
-PAD = 0.15
+PAD = 0.0        # 문장 사이 공백 없음(사용자 요청 2026-09-10)
+OPEN_LEAD = 0.55 # 두둥이 때린 뒤 첫 문장이 시작한다 -- 겹치면 말이 묻힌다
 WIN_Y, WIN_H = 488, 1010
 CAP_CENTER_Y = 1065
 REF = 100
@@ -101,7 +98,7 @@ Style: Title,Recipekorea Medium,80,&H00000000,&H000000FF,&H00000000,&H00000000,0
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
-    out, t, ncap = [header], 0.0, 0
+    out, t, ncap = [header], OPEN_LEAD, 0
     for i, (dur, fg) in enumerate(zip(sent, frags)):
         w = align.get(str(i + 1), [])
         counts = [len(f.split()) for f in fg]
@@ -131,6 +128,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 
 def build_segments(vid, c, durs, crop_y):
+    crops = c.get("crop_y") or [crop_y] * len(durs)   # 컷마다 다르게 줄 수 있다
     d = ROOT / vid
     (d / "final_segs").mkdir(exist_ok=True)
     tgt = [x + PAD for x in durs]
@@ -140,7 +138,7 @@ def build_segments(vid, c, durs, crop_y):
         out = d / "final_segs" / f"f{i:02d}.mp4"
         vf = ("scale=1080:1920:force_original_aspect_ratio=decrease,"
               "pad=1080:1920:(ow-iw)/2:(oh-ih)/2,"
-              f"crop=1080:{WIN_H}:0:{crop_y},setpts=(1/{sp:.6f})*PTS,fps=30")
+              f"crop=1080:{WIN_H}:0:{crops[i-1]},setpts=(1/{sp:.6f})*PTS,fps=30")
         r = run(["ffmpeg", "-y", "-v", "error", "-ss", f"{a:.3f}", "-to", f"{b:.3f}",
                  "-i", str(d / "source.mp4"), "-an", "-vf", vf, "-c:v", "libx264",
                  "-preset", "fast", "-crf", "18", "-pix_fmt", "yuv420p", str(out)])
@@ -156,81 +154,46 @@ def build_segments(vid, c, durs, crop_y):
         raise SystemExit(r.stderr[-600:])
 
 
-def peak_time(p):
-    o = subprocess.run(["ffmpeg", "-v", "error", "-i", p, "-ac", "1", "-ar", "44100",
-                        "-f", "f32le", "-"], capture_output=True)
-    x = np.frombuffer(o.stdout, dtype=np.float32)
-    if not len(x):
-        return 0.0
-    env = np.convolve(np.abs(x), np.ones(2205) / 2205, mode="same")
-    return float(np.argmax(env)) / 44100.0
+NL = chr(10)
 
 
 def build_audio(vid, durs):
+    """나레이션 + 오프닝 두둥 드럼. 그 밖의 효과음은 넣지 않는다."""
     d = ROOT / vid
     n = len(durs)
-    sent = [x + PAD for x in durs]
-    cuts, t = [], 0.0
-    for x in sent:
-        t += x
-        cuts.append(round(t, 3))
-    total = cuts[-1]
+    total = OPEN_LEAD + sum(durs)
 
-    run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
-         "-t", str(PAD), str(d / "silence.mp3")])
-    lines = []
-    for i in range(1, n + 1):
-        lines.append(f"file 'tts/line{i:02d}_fast.mp3'")
-        lines.append("file 'silence.mp3'")
-    (d / "narration_concat.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (d / "narration_concat.txt").write_text(
+        NL.join(f"file 'tts/line{i:02d}_fast.mp3'" for i in range(1, n + 1)) + NL,
+        encoding="utf-8")
     r = run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
              "-i", "narration_concat.txt", "-c:a", "libmp3lame", "-q:a", "2",
              "narration.mp3"], cwd=str(d))
     if r.returncode:
         raise SystemExit(r.stderr[-600:])
 
-    pick = lambda cls: sorted(glob.glob(str(SFX / cls / "*.wav")))
-    rumbles, hits = pick("rumble"), pick("hit")
-
-    # 장면 전환 효과음은 기본 끄기(3D.md 17번). 오프닝 두둥 + rumble + hit 만 남는다.
-    events = []
-    if len(cuts) > 3:
-        events.append((rumbles[0], cuts[2] + 0.9, 0.34, False))
-    if len(cuts) > 9:
-        events.append((rumbles[min(2, len(rumbles) - 1)], cuts[8] + 0.9, 0.34, False))
-    picks = [i for i in range(3, n, 2)][:6]
-    for k, idx in enumerate(picks):
-        mid = cuts[idx - 2] + sent[idx - 1] * 0.55
-        events.append((hits[k % len(hits)], round(mid, 3), 0.38, True))
-
-    inputs = ["-i", str(d / "narration.mp3"), "-i", DRUM]
-    parts = ["[0:a]volume=1.0,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a0]",
-             "[1:a]volume=8dB,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a1]"]
-    labels = ["[a0]", "[a1]"]
-    for j, (p, tgt, g, align) in enumerate(sorted(events, key=lambda e: e[1]), start=2):
-        start = max(0.0, tgt - (peak_time(p) if align else 0.0))
-        if start >= total:
-            continue
-        ms = int(round(start * 1000))
-        inputs += ["-i", p]
-        parts.append(f"[{j}:a]volume={g},aformat=sample_fmts=fltp:sample_rates=44100:"
-                     f"channel_layouts=stereo,adelay={ms}|{ms}[a{j}]")
-        labels.append(f"[a{j}]")
-    parts.append("".join(labels) + f"amix=inputs={len(labels)}:duration=first:"
-                 f"dropout_transition=0:normalize=0,alimiter=limit=0.95,"
-                 f"atrim=0:{total:.3f}[aout]")
-    r = run(["ffmpeg", "-y", "-v", "error"] + inputs + ["-filter_complex", ";".join(parts),
-            "-map", "[aout]", "-c:a", "aac", "-b:a", "192k", str(d / "audio_mix.m4a")])
+    # 오프닝 두둥 드럼만 남긴다. 그 밖의 효과음은 넣지 않는다(사용자 요청 2026-09-10).
+    ms = int(round(OPEN_LEAD * 1000))
+    fc = ("[0:a]volume=1.0,aformat=sample_fmts=fltp:sample_rates=44100:"
+          f"channel_layouts=stereo,adelay={ms}|{ms}[a0];"
+          "[1:a]volume=8dB,aformat=sample_fmts=fltp:sample_rates=44100:"
+          f"channel_layouts=stereo,afade=t=out:st={OPEN_LEAD + 0.05:.2f}:d=1.0[a1];"
+          "[a0][a1]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,"
+          f"alimiter=limit=0.95,atrim=0:{total:.3f}[aout]")
+    r = run(["ffmpeg", "-y", "-v", "error", "-i", str(d / "narration.mp3"), "-i", DRUM,
+             "-filter_complex", fc, "-map", "[aout]",
+             "-c:a", "aac", "-b:a", "192k", str(d / "audio_mix.m4a")])
     if r.returncode:
         raise SystemExit(r.stderr[-800:])
-    return total, len(labels) - 1
+    return total, 1
 
 
 def render(vid, c, total):
     d = ROOT / vid
     ass = str((d / "captions.ass").resolve()).replace("\\", "/").replace(":", "\\:")
     fdir = str(FONTS).replace("\\", "/").replace(":", "\\:")
-    fc = (f"[0:v]tpad=stop_mode=clone:stop_duration=1,"
+    fc = (f"[0:v]tpad=start_mode=clone:start_duration={OPEN_LEAD}:"
+          f"stop_mode=clone:stop_duration=1,"
           f"eq=gamma_r=1.05:gamma_b=0.95:saturation=1.08:contrast=1.03,"
           f"pad=1080:1920:0:{WIN_Y}:color=black[p];"
           f"[p][1:v]overlay=0:0:format=auto,ass='{ass}':fontsdir='{fdir}'[outv]")
