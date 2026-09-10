@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "id": "3d",
+  "name": "3D",
+  "kind": "channel_preset",
+  "runtime": "standalone",
+  "doc": "3D.md",
+  "note": "볼케이노와 무관한 독립 프리셋. 서술 규칙과 근거는 3D.md / examples.md 참고. 이 파일은 preset_guard.py 가 완성본을 검증할 때 읽는 기계용 규격이다.",
+
+  "reference": {
+    "channel": "두둥_픽",
+    "source_of_spec": "CapCut 초안 260624-b094 외 2편 역분석",
+    "analyzed_on": "2026-09-05"
+  },
+
+  "output": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "aspect": "9:16",
+    "target_seconds": { "min": 25, "max": 45, "sweet_spot": 43 },
+    "video_codec": "h264",
+    "crf": 20,
+    "x264_preset": "medium",
+    "pix_fmt": "yuv420p",
+    "audio_codec": "aac",
+    "audio_bitrate": "192k",
+    "loudness_lufs": -14,
+    "loudness_tolerance_lufs": 1.5,
+    "true_peak_db": -1.0
+  },
+
+  "delivery": {
+    "root": "내 문서/두둥픽",
+    "root_resolved_by": "[Environment]::GetFolderPath('MyDocuments') + '/두둥픽'",
+    "note": "내 문서가 OneDrive로 리디렉션돼 있다. 경로를 하드코딩하지 말고 MyDocuments 를 조회해서 쓴다.",
+    "warning": "OneDrive 동기화 폴더다. 중간 작업물(원본 영상·TTS mp3·세그먼트)은 ~/3d_works/<영상id> 에 두고 완성본만 여기로 보낸다."
+  },
+
+  "layout": {
+    "watermark_png": "assets/두둥픽_로고_템플릿.png",
+    "video_window": { "y": 488, "height": 1010, "note": "워터마크 PNG의 투명 영역. 원본은 여기 크롭해 채운다." },
+    "crop_height": 1010,
+    "crop_y_default": 300,
+    "crop_y_max": 430,
+    "crop_y_note": "컷마다 따로 준다(3D.md 2번). 원본 박제 자막 위치에 따라 상한이 달라진다."
+  },
+
+  "type": {
+    "caption_font": "assets/fonts/NanumSquareRoundB.ttf",
+    "caption_center_y": 1065,
+    "caption_target_width": 1000,
+    "caption_size_range": [44, 84],
+    "title_font": "assets/fonts/Recipekorea 레코체 FONT.ttf",
+    "title_alignment": 8,
+    "title_margin_v": 260,
+    "title_target_width": 1060,
+    "title_size_range": [50, 130],
+    "title_min_acceptable": 75,
+    "title_line2_ratio": 1.13
+  },
+
+  "narration": {
+    "engine": "typecast",
+    "voice": "Piljae",
+    "voice_id": "tc_68257f68bc6e3c161ab5078d",
+    "model": "ssfm-v30",
+    "language": "kor",
+    "atempo": 1.2,
+    "sentence_gap_sec": 0.15,
+    "sentence_count": [11, 13]
+  },
+
+  "sfx": {
+    "library": "assets/sfx",
+    "synthesized_by": "assets/sfx/synth_sfx.py",
+    "transition_sfx_default": false,
+    "gains": { "riser": 0.45, "impact": 0.6, "hit": 0.38, "rumble": 0.34 }
+  },
+
+  "pipeline": {
+    "scripts": "scripts/narration_variant",
+    "order": ["tts_gen.py", "asr_align.py", "build_segments.py", "build_audio.py", "build_ass.py", "render_video.py", "mux"],
+    "workdir": "~/3d_works/<영상id>",
+    "note": "저장소 안에서 직접 렌더하지 않는다. 스크립트를 작업 폴더로 복사해 대본만 갈아끼운다."
+  }
+}
