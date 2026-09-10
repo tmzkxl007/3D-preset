@@ -54,19 +54,22 @@ impacts  = pick("impact")
 rumbles  = pick("rumble")
 hits     = pick("hit")
 
-# big story beats get riser+impact; the rest a plain riser
-BIG = {2, 6, 8, 11}          # legs lost / lever pulling starts / tracks switched / final reveal
-RUMBLE_AT = {3, 9}           # entering the crisis, and just before the payoff
+# 장면 전환 효과음(riser / riser_impact / riser_rumble)은 사용자 요청으로 빼 둔다(2026-09-10).
+# 되살리려면 TRANSITION_SFX = True 로 바꾸면 된다.
+TRANSITION_SFX = False
+BIG = {2, 6, 8, 11}
+RUMBLE_AT = {3, 9}
 
 events = []   # (path, target_time, gain, align_peak)
-for i, c in enumerate(cuts[:-1], start=1):     # no cut after the last sentence
-    if i in BIG:
-        p = rimp[(i//2) % len(rimp)];  g = 0.60
-    elif i in RUMBLE_AT:
-        p = rrum[(i//3) % len(rrum)];    g = 0.45
-    else:
-        p = risers[(i*5) % len(risers)]; g = 0.45
-    events.append((p, c, g, True))
+if TRANSITION_SFX:
+    for i, c in enumerate(cuts[:-1], start=1):
+        if i in BIG:
+            p = rimp[(i//2) % len(rimp)];  g = 0.60
+        elif i in RUMBLE_AT:
+            p = rrum[(i//3) % len(rrum)];    g = 0.45
+        else:
+            p = risers[(i*5) % len(risers)]; g = 0.45
+        events.append((p, c, g, True))
 
 # sustained low rumble under the crisis and under the reveal
 events.append((rumbles[0], cuts[2] + 0.9, 0.34, False))
