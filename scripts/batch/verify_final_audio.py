@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """완성본 오디오를 ASR로 다시 읽어 대본에 없는 말이 섞이지 않았는지 확인한다."""
 import json
-import os, os, re, subprocess, time, urllib.request
+import os, re, subprocess, time, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 ROOT = Path(os.environ.get("VOLCANO_WORKDIR") or (Path.home() / "3d_works"))
