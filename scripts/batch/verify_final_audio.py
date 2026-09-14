@@ -16,8 +16,9 @@ def norm(s):
 
 def one(vid):
     c = CFG[vid]
-    mp4 = ROOT/vid/f"두둥픽_{c['slug']}.mp4"
-    wav = ROOT/vid/"final_audio.wav"
+    # 영상 id 가 "-" 로 시작하면 ffmpeg 가 옵션으로 읽는다 -- 절대경로로 넘긴다
+    mp4 = (ROOT/vid/f"두둥픽_{c['slug']}.mp4").resolve()
+    wav = (ROOT/vid/"final_audio.wav").resolve()
     subprocess.run(["ffmpeg","-v","error","-y","-i",str(mp4),"-vn","-ac","1","-ar","16000",str(wav)],
                    capture_output=True)
     b = f"----f{vid}"
@@ -39,7 +40,7 @@ def one(vid):
     q=urllib.request.Request(f"{BASE}/jobs/{job}/transcript?format=txt")
     q.add_header("Authorization",f"Bearer {KEY}")
     heard = q and urllib.request.urlopen(q).read().decode("utf-8").strip()
-    (ROOT/vid/"final_transcript.txt").write_text(heard, encoding="utf-8")
+    (ROOT/vid/"final_transcript.txt").resolve().write_text(heard, encoding="utf-8")
     # 띄어쓰기는 ASR 마음대로다 -- 공백을 지운 글자열로 비교한다
     import difflib
     a, b2 = norm(" ".join(c["lines"])), norm(heard)

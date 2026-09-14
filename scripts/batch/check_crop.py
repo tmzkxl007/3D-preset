@@ -11,7 +11,8 @@ H, W = 1920, 1080          # 1920 기준으로 환산해 본다
 CROP_Y, CROP_H = 300, 1010
 
 def rows(vid):
-    src = Path(vid) / "source.mp4"
+    # 영상 id 가 "-" 로 시작하면 ffprobe 가 옵션으로 읽는다 -- 절대경로로 넘긴다
+    src = (Path(vid) / "source.mp4").resolve()
     dur = float(subprocess.run(["ffprobe","-v","error","-show_entries","format=duration",
         "-of","default=noprint_wrappers=1:nokey=1",str(src)],
         capture_output=True,text=True).stdout.strip())
