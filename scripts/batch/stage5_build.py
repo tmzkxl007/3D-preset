@@ -26,6 +26,8 @@ DRUM = str(ASSETS / "두둥_북소리.mp3")
 
 PAD = 0.0        # 문장 사이 공백 없음(사용자 요청 2026-09-10)
 OPEN_LEAD = 0.55 # 두둥이 때린 뒤 첫 문장이 시작한다 -- 겹치면 말이 묻힌다
+TAIL = 0.3       # 마지막 말이 끝난 뒤 남기는 여운. 0 이면 뚝 끊긴다(사용자 요청 2026-09-15)
+SRC_SFX_DB = 0.0 # 원본에서 나레이션을 뺀 효과음 트랙의 게인. srcsfx.wav 가 있을 때만 쓴다
 WIN_Y, WIN_H = 488, 1010
 CAP_CENTER_Y = 1065
 REF = 100
@@ -122,9 +124,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             ncap += 1
         t += dur
     title = f"{{\\fs{s1}}}{t_lines[0]}\\N{{\\fs{s2}}}{t_lines[1]}"
-    out.append(f"Dialogue: 2,{ts(0)},{ts(t)},Title,,0,0,0,,{title}\n")
+    # 제목은 여운 구간까지 띄워 둔다 -- 끝에서 제목만 먼저 사라지면 어색하다
+    out.append(f"Dialogue: 2,{ts(0)},{ts(t + TAIL)},Title,,0,0,0,,{title}\n")
     (ROOT / vid / "captions.ass").write_text("".join(out), encoding="utf-8-sig")
-    return t, ncap, (s1, s2), warn
+    return t + TAIL, ncap, (s1, s2), warn
 
 
 def build_segments(vid, c, durs, crop_y):
@@ -161,7 +164,7 @@ def build_audio(vid, durs):
     """나레이션 + 오프닝 두둥 드럼. 그 밖의 효과음은 넣지 않는다."""
     d = ROOT / vid
     n = len(durs)
-    total = OPEN_LEAD + sum(durs)
+    total = OPEN_LEAD + sum(durs) + TAIL
 
     (d / "narration_concat.txt").write_text(
         NL.join(f"file 'tts/line{i:02d}_fast.mp3'" for i in range(1, n + 1)) + NL,
@@ -177,11 +180,20 @@ def build_audio(vid, durs):
     fc = ("[0:a]volume=1.0,aformat=sample_fmts=fltp:sample_rates=44100:"
           f"channel_layouts=stereo,adelay={ms}|{ms}[a0];"
           "[1:a]volume=8dB,aformat=sample_fmts=fltp:sample_rates=44100:"
-          f"channel_layouts=stereo,afade=t=out:st={OPEN_LEAD + 0.05:.2f}:d=1.0[a1];"
+          f"channel_layouts=stereo,afade=t=out:st={OPEN_LEAD + 0.05:.2f}:d=0.6[a1];"
           "[a0][a1]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,"
-          f"alimiter=limit=0.95,atrim=0:{total:.3f}[aout]")
-    r = run(["ffmpeg", "-y", "-v", "error", "-i", str(d / "narration.mp3"), "-i", DRUM,
-             "-filter_complex", fc, "-map", "[aout]",
+          f"alimiter=limit=0.95,apad,atrim=0:{total:.3f}[aout]")
+    # 원본에서 나레이션을 뺀 효과음 트랙이 있으면 아래에 깐다(build_srcsfx.py 가 만든다)
+    srcsfx = d / "srcsfx.wav"
+    ins = ["-i", str(d / "narration.mp3"), "-i", DRUM]
+    if srcsfx.exists():
+        ins += ["-i", str(srcsfx)]
+        fc = fc.replace("[a0][a1]amix=inputs=2",
+                        f"[2:a]volume={SRC_SFX_DB}dB,aformat=sample_fmts=fltp:"
+                        "sample_rates=44100:channel_layouts=stereo[a2];"
+                        "[a0][a1][a2]amix=inputs=3")
+    r = run(["ffmpeg", "-y", "-v", "error"] + ins +
+            ["-filter_complex", fc, "-map", "[aout]",
              "-c:a", "aac", "-b:a", "192k", str(d / "audio_mix.m4a")])
     if r.returncode:
         raise SystemExit(r.stderr[-800:])
@@ -193,7 +205,7 @@ def render(vid, c, total):
     ass = str((d / "captions.ass").resolve()).replace("\\", "/").replace(":", "\\:")
     fdir = str(FONTS).replace("\\", "/").replace(":", "\\:")
     fc = (f"[0:v]tpad=start_mode=clone:start_duration={OPEN_LEAD}:"
-          f"stop_mode=clone:stop_duration=1,"
+          f"stop_mode=clone:stop_duration=2,"
           f"eq=gamma_r=1.05:gamma_b=0.95:saturation=1.08:contrast=1.03,"
           f"pad=1080:1920:0:{WIN_Y}:color=black[p];"
           f"[p][1:v]overlay=0:0:format=auto,ass='{ass}':fontsdir='{fdir}'[outv]")
